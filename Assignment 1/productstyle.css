@@ -1,0 +1,21 @@
+body {
+    width: 920 px;
+    margin: 0 auto;
+    background: green;
+    text-align: center;
+    font: 200;
+}
+img {
+display: block;
+border: 12px solid black;
+border-radius: 12px;
+margin-left: auto;
+height: 320px;
+width: 320px;
+}
+
+main {
+display: flex;
+flex-flow: row wrap;
+justify-content: space-around;
+}
