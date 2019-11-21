@@ -1,0 +1,227 @@
+<script src="Product.data.js"></script>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        function checkQuantityTextbox(theTextbox) {
+            errs = isNonNegInt(theTextbox.value, true);
+            if (errs.length == 0) errs = ['You want:'];
+            if (theTextbox.value.trim() == '') errs = ['Quantity'];
+            document.getElementById(theTextbox.name + '_label').innerHTML = errs.join(", ");
+        }
+
+        function isNonNegInt(q, return_errors = false) {  //this code came from lab12
+            errors = []; // assume no errors at first
+            if (q == '') q = 0; // handle blank inputs as if they are 0
+            if (Number(q) != q) errors.push('<font color="red">Not a number!</font>'); // Check if string is a number value
+            else if (q < 0) errors.push('<font color="red">Negative value!</font>'); // Check if it is non-negative
+            else if (parseInt(q) != q) errors.push('<font color="red">Not an integer!</font>'); // Check that it is an integer
+            return return_errors ? errors : (errors.length == 0);
+        };
+
+        let params = (new URL(document.location)).searchParams;
+
+        window.onload = function () {
+        
+            // recieves query string which contains form data
+            // form was submitted so verify that quantities are valid then redirect to invoice if ok.
+            if (params.has('purchase_submit')) {
+                has_errors = false; // quantities always valid from the start ((use post instead of params))
+                total_qty = 0; //  if the total great than zero
+                for (i = 0; i < products.length; i++) {
+                    if (params.has(`quantity${i}`)) {
+                        a_qty = params.get(`quantity${i}`);
+
+                        quantity_form[`quantity${i}`].value = a_qty;
+                        total_qty += a_qty;
+                        if (!isNonNegInt(a_qty)) {
+                            has_errors = true; // indicates invalid quantity
+                            checkQuantityTextbox(product_selection_form[`quantity${i}`]); // reveals the location of error
+                        };
+                    };
+                };
+                //responde to errors
+                if (has_errors) {
+                    alert("Please use valid quantities!");
+                } else if (total_qty == 0) { //general alert
+                    alert("Please choose quantities!");
+                }
+            };
+        };
+
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+
+    <link rel="stylesheet" type="text/css" href="productstyle.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Mitchell_Davis_Assignment1</title>
+    </head>
+
+</html>
+
+<body>
+
+    <h1>awesome surfboards</h1>
+    <form name="quantity_form" action="process_form" method="GET">
+        <div>
+            <script> // This process the form to not be shown in the query string
+                for (i = 0; i < products.length; i++) {
+                    document.write(` <section class="item">
+                <h2>${products[i].model}</h2>
+                <p>$${products[i].price}</p>
+                <label id="quantity${i}_label" }">Quantity</label>
+                <input type="text" placeholder="0" name="quantity${i}" onkeyup="checkQuantityTextbox(this);">
+                <img src="${products[i].image}">
+                </section>
+                `);
+                };
+
+            </script>
+        </div>
+        <input type="submit" name = "purchase_submit" value="Purchase">
+    </form>
+
+
+    <script src="Products.display.html"></script>
+    <script>
+
+        var quantities = [];
+        // form has been submitted and now it should process
+        if (params.has('purchase_submit')) {
+            for (i = 0; i < products.length; i++) {
+                if (params.has(`quantity${i}`)) {
+                    a_qty = params.get(`quantity${i}`);
+                    quantities[i] = a_qty;
+                }
+            }
+        } else {
+            document.write('no form submitted');
+        }
+       
+        console.log(quantities);
+    </script>
+
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Document</title>
+        <style>
+            body {
+                transform: scale(1);
+                transform-origin: 0 0;
+            }
+        </style>
+    </head>
+
+    <body>
+        <table border="2">
+            <tbody>
+                <tr>
+                    <th style="text-align: center;" width="43%">Item</th>
+                    <th style="text-align: center;" width="11%">quantity</th>
+                    <th style="text-align: center;" width="13%">price</th>
+                    <th style="text-align: center;" width="54%">extended price</th>
+                </tr>
+                <script>
+                    subtotal = 0;
+                    for (i = 0; i < products.length; i++) {
+                        if (quantities[i] > 0) {
+                            // this is the product row
+                            extended_price = quantities[i] * products[i].price
+                            subtotal += extended_price;
+                            document.write(`
+                    <tr>
+                      <td width="43%">${products[i].model}</td>
+                      <td align="center" width="11%">${quantities[i]}</td>
+                      <td width="13%">\$${products[i].price}</td>
+                      <td width="54%">\$${extended_price}</td>
+                    </tr>
+                    `);
+                        }
+                    }
+
+
+
+
+                    // Compute the tax price
+                    var tax_rate = 0.0575;
+                    var tax = tax_rate * subtotal;
+
+
+                    // Compute the shipping price
+                    if (subtotal <= 50) {
+                        shipping = 2;
+                    }
+                    else if (subtotal <= 100) {
+                        shipping = 5;
+                    }
+                    else {
+                        shipping = 0.05 * subtotal; // 5 percent of the subtotal
+                    }
+
+
+                    // Compute the grand total
+                    var total = subtotal + tax + shipping;
+                </script>
+                <tr>
+                    <td colspan="4" width="100%">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;" colspan="3" width="67%">Sub-total</td>
+                    <td width="54%">$
+                        <script>document.write(subtotal);</script>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;" colspan="3" width="67%"><span style="font-family: arial;">Tax @
+                            <script>document.write(100 * tax_rate);</script>%</span></td>
+                    <td width="54%">$
+                        <script>document.write(tax.toFixed(2));</script>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;" colspan="3" width="67%">Shipping</span></td>
+                    <td width="54%">$
+                        <script>document.write(shipping.toFixed(2));</script>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;" colspan="3" width="67%"><strong>Total</strong></td>
+                    <td width="54%"><strong>$
+                            <script>document.write(total.toFixed(2));</script></strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <div>
+            <br>
+            <b>
+                OUR SHIPPING POLICY IS:A subtotal $0 - $49.99 will be $2 shipping
+                A subtotal $50 - $99.99 will be $5 shipping
+                Subtotals over $100 will be charged 5% of the subtotal amount
+            </b>
+        </div>
+    </body>
+
+    </html>
+
+
+</body>
+
+</Table>
+
+</html>
